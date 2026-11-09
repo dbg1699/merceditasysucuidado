@@ -1,0 +1,1933 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Misión Ambiental Merceditas Gómez Martínez</title>
+    <link rel="stylesheet" href="tailwind.css">
+    <link rel="stylesheet" href="estilos.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Fredoka+One&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
+        body {
+            font-family: 'Quicksand', 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+        }
+        .pixel-font { font-family: 'Press Start 2P', 'Courier New', monospace; }
+        .title-font { font-family: 'Fredoka One', 'Arial Rounded MT Bold', 'Trebuchet MS', Arial, sans-serif; font-weight: 800; }
+        canvas {
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-crisp-edges;
+            image-rendering: auto;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
+        }
+        .touch-btn {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(4px);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 1rem;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.1s ease;
+        }
+        .touch-btn:active {
+            background: rgba(255, 255, 255, 0.55);
+            transform: scale(0.92);
+        }
+        @keyframes floatFeedback {
+            0% { transform: translateY(0) scale(0.9); opacity: 0; }
+            20% { transform: translateY(-8px) scale(1.05); opacity: 1; }
+            80% { transform: translateY(-12px) scale(1); opacity: 1; }
+            100% { transform: translateY(-25px) scale(0.95); opacity: 0; }
+        }
+        .feedback-pop { animation: floatFeedback 2.8s forwards ease-out; }
+        :root { --leaf: #247a48; --sun: #ffc857; --cream: #fff7df; --ink: #244333; }
+        #story-screen, #shop-screen {
+            position: fixed; inset: 0; z-index: 80; display: none;
+            align-items: center; justify-content: center; padding: 18px;
+            background: linear-gradient(135deg, rgba(18,55,43,.94), rgba(24,82,67,.92));
+            backdrop-filter: blur(7px); color: #fff;
+        }
+        #story-screen.show, #shop-screen.show { display: flex; }
+        .story-card, .shop-card {
+            width: min(780px, 96%); max-height: 92%; overflow: auto;
+            background: linear-gradient(145deg, #fff9e8, #e5f4d8);
+            color: #244333; border: 5px solid #f6c85f; border-radius: 28px;
+            padding: clamp(18px, 3vw, 30px); box-shadow: 0 22px 60px #102b2499;
+        }
+        .story-card h2, .shop-card h2 { font-family: 'Fredoka One', 'Arial Rounded MT Bold', 'Trebuchet MS', Arial, sans-serif; font-weight: 800; font-size: clamp(25px, 4vw, 40px); color: #247a48; margin: 5px 0 12px; }
+        .story-card p { font-size: clamp(14px, 1.8vw, 17px); line-height: 1.55; }
+        .story-scene { display: flex; gap: 14px; align-items: center; background: #eaf5d9; border-radius: 18px; padding: 14px; margin: 14px 0; }
+        .story-scene .big { font-size: 48px; min-width: 60px; text-align: center; }
+        .action-btn {
+            border: 0; border-radius: 14px; padding: 12px 18px; font-weight: 900;
+            cursor: pointer; color: white; background: linear-gradient(#42a96c, #247a48);
+            box-shadow: 0 4px 0 #155331; transition: .15s;
+        }
+        .action-btn:hover { filter: brightness(1.08); transform: translateY(-2px); }
+        .action-btn.secondary { background: linear-gradient(#f4b84e, #d88925); box-shadow: 0 4px 0 #9b5d16; color: #35230b; }
+        .action-btn.disabled { background: #94a3b8; box-shadow: 0 4px 0 #64748b; cursor: not-allowed; }
+        .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 18px 0; }
+        .shop-item { background: #fff; border: 2px solid #c9dfbd; border-radius: 18px; padding: 14px; text-align: center; box-shadow: 0 5px 12px #24433314; }
+        .shop-item .skin-icon { font-size: 42px; }
+        .shop-item h3 { font-size: 14px; font-weight: 900; margin: 7px 0 3px; }
+        .shop-item p { font-size: 11px; color: #57705d; min-height: 34px; }
+        .shop-wallet { display: inline-flex; gap: 8px; align-items: center; background: #fff0b9; border-radius: 999px; padding: 8px 14px; font-weight: 900; color: #785018; }
+        #level-ribbon {
+            position: fixed; top: 8px; left: 50%; transform: translateX(-50%); z-index: 15; max-width: 92vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            background: #fff7d9; color: #315b3d; border: 2px solid #f2c75c; border-radius: 999px;
+            padding: 5px 14px; font-weight: 900; font-size: 12px; box-shadow: 0 3px 8px #193c2c55; pointer-events: none;
+        }
+        #power-hint {
+            position: fixed; right: 12px; top: 12px; z-index: 16; background: #fff6d9; color: #275b3d;
+            border: 2px solid #f1c85c; border-radius: 12px; padding: 7px 10px; font-size: 11px; font-weight: 900; pointer-events: none;
+        }
+        #btn-shop-menu { margin-top: 7px; background: #f2bd4c; color: #49330c; border: 0; border-radius: 12px; padding: 9px 20px; font-weight: 900; box-shadow: 0 3px 0 #a96b1c; }
+        #btn-next-level { background: linear-gradient(#f4c75a, #e29a2e); color: #432d0a; border: 0; border-radius: 12px; padding: 11px 18px; font-weight: 900; }
+        @media(max-width:560px){
+            .story-scene { align-items: flex-start; }
+            .story-scene .big { font-size: 34px; min-width: 42px; }
+            .story-card, .shop-card { padding: 15px; }
+            .shop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        #game-wrapper { height: min(calc(100vh - 8px), 720px); height: min(calc(100dvh - 8px), 720px); }
+        #desktop-hints { display: flex; }
+        #touch-controls { display: none; }
+        #hud-p2-keys:not(.hidden) { display: flex; }
+        @media (pointer: coarse), (max-width: 640px) {
+            #desktop-hints { display: none !important; }
+            #touch-controls { display: flex; }
+            .touch-btn { min-width: 48px; min-height: 44px; }
+        }
+        @media (max-height: 460px) {
+            #hud { height: 40px; }
+            #level-ribbon, #power-hint { display: none !important; }
+            footer { padding-top: 2px; padding-bottom: 2px; }
+            .story-card, .shop-card { max-height: 98%; padding: 12px; }
+            #screen-title h1 { font-size: 1.5rem; }
+            #screen-title p { margin-bottom: .5rem; font-size: .75rem; }
+            .char-avatar { width: 56px !important; height: 56px !important; flex-basis: 56px !important; }
+            .personajes { width: 50px !important; height: 50px !important; }
+        }
+        @media (max-width: 640px) {
+            #game-wrapper { border-width: 2px; border-radius: 10px; }
+            #level-ribbon { font-size: 10px; padding: 4px 10px; top: 4px; }
+            #power-hint { display: none !important; }
+        }
+        #screen-title, #screen-char-select, #screen-victory, #screen-gameover, #screen-pause { overflow-y: auto; }
+        #rotate-hint {
+            display: none; position: fixed; inset: 0; z-index: 200; background: rgba(15,23,42,.96);
+            color: #fde68a; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 24px; gap: 14px;
+        }
+        @media (orientation: portrait) and (max-width: 640px) { #rotate-hint.show { display: flex; } }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen bg-slate-900 select-none p-1 sm:p-2">
+
+    <div id="game-wrapper" class="relative w-full max-w-5xl flex flex-col bg-slate-800 rounded-2xl overflow-hidden border-4 border-emerald-500 shadow-2xl">
+        
+        <header id="hud" class="hidden h-14 bg-slate-900/90 border-b-2 border-emerald-500/40 px-3 py-1 flex items-center justify-between z-10 text-xs sm:text-sm">
+            <div class="flex items-center gap-3">
+                <div id="hud-p1" class="flex items-center gap-2 bg-slate-800/80 px-2 py-1 rounded-lg border border-blue-400">
+                    <span id="hud-p1-avatar" class="text-lg">🐺</span>
+                    <span class="font-bold text-blue-300 hidden sm:inline" id="hud-p1-name">Tony</span>
+                    <div id="hud-p1-hearts" class="flex text-red-500 text-sm">❤️❤️❤️</div>
+                    <div id="hud-p1-item" class="w-6 h-6 flex items-center justify-center bg-slate-700 rounded border border-dashed border-gray-400 text-xs" title="Residuo en mano">-</div>
+                </div>
+
+                <div id="hud-p2" class="hidden flex items-center gap-2 bg-slate-800/80 px-2 py-1 rounded-lg border border-amber-400">
+                    <span id="hud-p2-avatar" class="text-lg">🐶</span>
+                    <span class="font-bold text-amber-300 hidden sm:inline" id="hud-p2-name">Firulais</span>
+                    <div id="hud-p2-hearts" class="flex text-red-500 text-sm">❤️❤️❤️</div>
+                    <div id="hud-p2-item" class="w-6 h-6 flex items-center justify-center bg-slate-700 rounded border border-dashed border-gray-400 text-xs" title="Residuo en mano">-</div>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-center flex-1 max-w-[200px] sm:max-w-xs mx-2">
+                <div class="flex justify-between w-full text-[10px] sm:text-xs font-bold text-emerald-300">
+                    <span>Limpieza del Colegio</span>
+                    <span id="hud-progress-text">0/6</span>
+                </div>
+                <div class="w-full bg-slate-700 h-2.5 rounded-full overflow-hidden border border-emerald-500/50 mt-0.5">
+                    <div id="hud-progress-bar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full w-0 transition-all duration-300"></div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <div class="bg-emerald-950/80 px-2.5 py-1 rounded-lg border border-emerald-500 text-emerald-300 font-bold flex items-center gap-1">
+                    <span>⭐</span>
+                    <span id="hud-score" class="pixel-font text-xs">0000</span>
+                </div>
+                <button id="btn-pause" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded border border-slate-500 text-xs font-bold">⏸️</button>
+            </div>
+        </header>
+
+        <div class="relative flex-1 bg-sky-200 overflow-hidden flex items-center justify-center">
+            <canvas id="gameCanvas" width="960" height="540" class="w-full h-full object-contain bg-sky-300"></canvas>
+
+            <div id="feedback-toast" class="hidden absolute top-4 left-1/2 -translate-x-1/2 max-w-md w-[90%] p-3 rounded-xl shadow-2xl border-2 text-center text-sm font-bold z-30 pointer-events-none transition-all"></div>
+
+            <div id="screen-title" class="absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center p-4 z-40 text-center">
+                <div class="inline-block px-3 py-1 bg-emerald-600/30 text-emerald-300 rounded-full text-xs font-bold mb-2 border border-emerald-400/30">
+                    I.E. MERCEDITAS GÓMEZ MARTÍNEZ • PROYECTO PRAE
+                </div>
+                <h1 class="title-font text-3xl sm:text-5xl text-yellow-300 drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] mb-1">
+                    MISIÓN MERCEDITAS
+                </h1>
+                <p class="text-sm sm:text-base text-emerald-200 mb-6 max-w-lg">
+                    ¡Cuidar y limpiar nuestro colegio es compromiso de todos! Elige tu equipo, clasifica los residuos y protege nuestro entorno escolar.
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-4 mb-6 w-full max-w-md">
+                    <button id="btn-mode-1p" class="flex-1 bg-gradient-to-b from-blue-500 to-blue-700 hover:from-blue-400 hover:to-blue-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg border-b-4 border-blue-900 flex items-center justify-center gap-2 transform active:scale-95 transition">
+                        <span class="text-xl">🎒</span>
+                        <div class="text-left">
+                            <div class="text-xs text-blue-200">Aventura Individual</div>
+                            <div class="text-sm font-black">1 JUGADOR</div>
+                        </div>
+                    </button>
+                    <button id="btn-mode-2p" class="flex-1 bg-gradient-to-b from-emerald-500 to-emerald-700 hover:from-emerald-400 hover:to-emerald-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg border-b-4 border-emerald-900 flex items-center justify-center gap-2 transform active:scale-95 transition">
+                        <span class="text-xl">🤝</span>
+                        <div class="text-left">
+                            <div class="text-xs text-emerald-200">Cooperativo en Teclado</div>
+                            <div class="text-sm font-black">2 JUGADORES</div>
+                        </div>
+                    </button>
+                </div>
+
+                <button id="btn-open-guide" class="text-xs text-cyan-300 hover:text-cyan-100 underline mb-2">
+                    📖 Guía de canecas (Blanca, Verde, Negra y Protocolo)
+                </button>
+                <button id="btn-shop-menu">✨ Abrir tienda ecológica</button>
+            </div>
+
+            <div id="screen-char-select" class="hidden absolute inset-0 bg-slate-900/95 flex flex-col items-center justify-center p-4 z-40">
+                <h2 class="title-font text-2xl sm:text-3xl text-yellow-300 mb-2">ELIGE TU PERSONAJE</h2>
+                <p id="char-select-subtitle" class="text-xs sm:text-sm text-cyan-200 mb-4 text-center">
+                    Jugador 1: Selecciona a tu guardián escolar
+                </p>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl w-full mb-6">
+                    <div data-char="tony" class="char-card cursor-pointer bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 rounded-xl p-3 flex flex-col items-center text-center transition-all hover:scale-105">
+                        <div class="char-avatar circulo bg-blue-900/60 rounded-full flex items-center justify-center text-3xl mb-2 border border-blue-400">
+                            <img class="personajes" src="Tony.png" alt="Lobo">
+                        </div>
+                        <h3 class="font-bold text-sm text-blue-300">Tony, el lobo</h3>
+                        <div class="flex items-center gap-1 text-[10px] text-gray-300 mt-1">
+                            <span class="w-2 h-2 rounded-full bg-amber-800" title="Ojo café"></span>
+                            <span class="w-2 h-2 rounded-full bg-cyan-400" title="Ojo azul"></span>
+                            <span>Ojos bicolor</span>
+                        </div>
+                        <p class="text-[11px] text-gray-400 mt-1">Alegre, juguetón y siempre dispuesto a ayudar en el patio.</p>
+                    </div>
+
+                    <div data-char="firulais" class="char-card cursor-pointer bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 rounded-xl p-3 flex flex-col items-center text-center transition-all hover:scale-105">
+                        <div class="char-avatar bg-amber-900/60 rounded-full flex items-center justify-center text-3xl mb-2 border border-amber-400">
+                            <img class="personajes" src="Rocky.png" alt="Perro">
+                        </div>
+                        <h3 class="font-bold text-sm text-amber-300">Firulais, el perro</h3>
+                        <span class="text-[10px] text-amber-200 mt-1">Leal y enérgico</span>
+                        <p class="text-[11px] text-gray-400 mt-1">Protector del colegio y gran compañero de equipo.</p>
+                    </div>
+
+                    <div data-char="emma" class="char-card cursor-pointer bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 rounded-xl p-3 flex flex-col items-center text-center transition-all hover:scale-105">
+                        <div class="char-avatar bg-pink-900/60 rounded-full flex items-center justify-center text-3xl mb-2 border border-pink-400">
+                            <img class="personajes" src="emma.png" alt="Coneja Emma">
+                        </div>
+                        <h3 class="font-bold text-sm text-pink-300">Emma, Coneja</h3>
+                        <span class="text-[10px] text-pink-200 mt-1">Ágil y dulce</span>
+                        <p class="text-[11px] text-gray-400 mt-1">Blanca con manchitas rosadas; rápida cuidando a sus amigos.</p>
+                    </div>
+
+                    <div data-char="lucas" class="char-card cursor-pointer bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 rounded-xl p-3 flex flex-col items-center text-center transition-all hover:scale-105">
+                        <div class="char-avatar bg-orange-900/60 rounded-full flex items-center justify-center text-3xl mb-2 border border-orange-400">
+                            <img class="personajes" src="lucas.png" alt="Puma">
+                        </div>
+                        <h3 class="font-bold text-sm text-orange-300">Lucas, Puma</h3>
+                        <span class="text-[10px] text-orange-200 mt-1">Fuerte y prudente</span>
+                        <p class="text-[11px] text-gray-400 mt-1">Sensato, toma siempre las mejores decisiones ambientales.</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-4">
+                    <button id="btn-back-title" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg font-bold text-xs">
+                        ⬅️ Volver
+                    </button>
+                    <button id="btn-start-game" disabled class="bg-gray-600 text-gray-400 cursor-not-allowed font-bold py-2.5 px-6 rounded-xl shadow border-b-4 text-sm transition">
+                        ¡Comenzar Misión!
+                    </button>
+                </div>
+            </div>
+
+            <div id="modal-guide" class="hidden absolute inset-0 bg-slate-900/95 flex flex-col items-center justify-center p-4 z-50">
+                <div class="bg-slate-800 border-2 border-emerald-500 rounded-2xl p-5 max-w-xl w-full max-h-[90vh] overflow-y-auto">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="title-font text-lg text-emerald-300 flex items-center gap-2">
+                            <span>♻️</span> Código de Separación Escolar
+                        </h3>
+                        <button id="btn-close-guide" class="text-gray-400 hover:text-white font-bold text-lg">✕</button>
+                    </div>
+                    <div class="space-y-2.5 text-xs">
+                        <div class="p-2.5 rounded-lg bg-slate-700/80 border-l-4 border-white flex items-start gap-2">
+                            <span class="text-xl">⚪</span>
+                            <div>
+                                <span class="font-bold text-white uppercase">Caneca Blanca: Aprovechables</span>
+                                <p class="text-gray-300">Residuos limpios y secos: botellas plásticas, cajas de cartón, papel de cuadernos, latas de jugo.</p>
+                            </div>
+                        </div>
+                        <div class="p-2.5 rounded-lg bg-slate-700/80 border-l-4 border-emerald-500 flex items-start gap-2">
+                            <span class="text-xl">🟢</span>
+                            <div>
+                                <span class="font-bold text-emerald-400 uppercase">Caneca Verde: Orgánicos</span>
+                                <p class="text-gray-300">Restos de alimentos del refrigerio: cáscaras de banano, corazones de manzana, sobras de fruta.</p>
+                            </div>
+                        </div>
+                        <div class="p-2.5 rounded-lg bg-slate-700/80 border-l-4 border-zinc-600 flex items-start gap-2">
+                            <span class="text-xl">⚫</span>
+                            <div>
+                                <span class="font-bold text-zinc-300 uppercase">Caneca Negra: No Aprovechables</span>
+                                <p class="text-gray-300">Servilletas sucias, papeles con grasa, envolturas de papitas y golosinas metalizadas.</p>
+                            </div>
+                        </div>
+                        <div class="p-2.5 rounded-lg bg-red-950/70 border-l-4 border-red-500 flex items-start gap-2">
+                            <span class="text-xl">🔴</span>
+                            <div>
+                                <span class="font-bold text-red-400 uppercase">Residuos Peligrosos (¡Atención!)</span>
+                                <p class="text-red-200">Vidrios rotos, jeringas o químicos. <strong>¡Los niños no los tocan!</strong> En el juego, se pulsa interactuar junto al cartel de seguridad para que el profesor/adulto se encargue.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="btn-guide-ok" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg text-xs">
+                        ¡Entendido! Regresar
+                    </button>
+                </div>
+            </div>
+
+            <div id="screen-victory" class="hidden absolute inset-0 bg-slate-900/95 flex flex-col items-center justify-center p-4 z-40 text-center">
+                <span class="text-5xl mb-2">🏆🌱</span>
+                <h2 class="title-font text-3xl sm:text-4xl text-yellow-300 mb-2">¡PATIO ESCOLAR LIMPIO!</h2>
+                <p class="text-sm text-emerald-200 max-w-md mb-4">
+                    ¡Excelente trabajo de equipo! En la <strong>I.E. Merceditas Gómez Martínez</strong> todos somos responsables de cuidar el agua, las canchas y los salones.
+                </p>
+                <div class="bg-slate-800 p-4 rounded-xl border border-emerald-500 mb-6 w-full max-w-sm flex justify-around">
+                    <div>
+                        <div class="text-xs text-gray-400">Puntaje Final</div>
+                        <div id="victory-score" class="text-xl font-bold text-yellow-300">0</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-400">Medalla Obtenida</div>
+                        <div class="text-xl font-bold text-emerald-400">Líder PRAE ⭐</div>
+                    </div>
+                </div>
+                <div class="flex gap-3 flex-wrap justify-center">
+                    <button id="btn-next-level">🌟 Siguiente nivel</button>
+                    <button id="btn-replay-vic" class="bg-emerald-600 hover:bg-emerald-500 font-bold py-2.5 px-6 rounded-xl shadow text-sm">
+                        🔄 Jugar Otra Vez
+                    </button>
+                    <button id="btn-menu-vic" class="bg-slate-700 hover:bg-slate-600 font-bold py-2.5 px-6 rounded-xl text-sm">
+                        🏠 Menú Principal
+                    </button>
+                </div>
+            </div>
+
+            <div id="screen-gameover" class="hidden absolute inset-0 bg-slate-900/95 flex flex-col items-center justify-center p-4 z-40 text-center">
+                <span class="text-5xl mb-2">🩹🧹</span>
+                <h2 class="title-font text-3xl sm:text-4xl text-rose-400 mb-2">¡NO TE RINDAS!</h2>
+                <p class="text-sm text-gray-300 max-w-md mb-6">
+                    La basura y los obstáculos nos vencieron esta vez, pero mantener la escuela limpia requiere paciencia y constancia. ¡Volvamos a intentarlo!
+                </p>
+                <div class="flex gap-4">
+                    <button id="btn-retry" class="bg-rose-600 hover:bg-rose-500 font-bold py-2.5 px-6 rounded-xl shadow text-sm">
+                        🔄 Intentar de Nuevo
+                    </button>
+                    <button id="btn-menu-over" class="bg-slate-700 hover:bg-slate-600 font-bold py-2.5 px-6 rounded-xl text-sm">
+                        🏠 Menú Principal
+                    </button>
+                </div>
+            </div>
+
+            <div id="screen-pause" class="hidden absolute inset-0 bg-slate-900/85 flex flex-col items-center justify-center p-4 z-40 text-center">
+                <h2 class="title-font text-3xl text-yellow-300 mb-4">PAUSA</h2>
+                <div class="flex flex-col gap-3 w-48">
+                    <button id="btn-resume" class="bg-emerald-600 hover:bg-emerald-500 font-bold py-2 rounded-lg text-sm">Reanudar</button>
+                    <button id="btn-restart" class="bg-blue-600 hover:bg-blue-500 font-bold py-2 rounded-lg text-sm">Reiniciar Nivel</button>
+                    <button id="btn-exit-menu" class="bg-slate-700 hover:bg-slate-600 font-bold py-2 rounded-lg text-sm">Menú Principal</button>
+                </div>
+            </div>
+        </div>
+
+        <footer class="bg-slate-900 border-t border-slate-700 px-3 py-2 flex items-center justify-between z-10 text-xs">
+            <div id="desktop-hints" class="items-center gap-4 text-gray-400 text-[11px]">
+                <div class="flex items-center gap-1">
+                    <span class="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-blue-300 font-mono">Jugador 1:</span>
+                    <span>Flechas [◀ ▶] Mover, [▲] Saltar, [▼ / Espacio] Recoger/Depositar · [Shift] Poder</span>
+                </div>
+                <div id="hud-p2-keys" class="hidden flex items-center gap-1 border-l border-slate-700 pl-4">
+                    <span class="px-1.5 py-0.5 bg-slate-800 border border-slate-600 rounded text-amber-300 font-mono">Jugador 2:</span>
+                    <span>[A / D] Mover, [W] Saltar, [S / E] Recoger/Depositar</span>
+                </div>
+            </div>
+
+            <div id="touch-controls" class="w-full justify-between items-center gap-2">
+                <div class="flex gap-2">
+                    <button id="touch-left" class="touch-btn w-12 h-11 text-xl">◀</button>
+                    <button id="touch-right" class="touch-btn w-12 h-11 text-xl">▶</button>
+                </div>
+                <div class="flex gap-2">
+                    <button id="touch-interact" class="touch-btn w-14 h-11 bg-emerald-600/60 border-emerald-400 text-xs">
+                        Recoger
+                    </button>
+                    <button id="touch-jump" class="touch-btn w-12 h-11 bg-blue-600/60 border-blue-400 text-xl font-bold">
+                        ▲
+                    </button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+<div id="rotate-hint" class="show">
+    <div style="font-size:56px">📱↻</div>
+    <div class="title-font" style="font-size:22px">Gira tu celular</div>
+    <p style="max-width:280px;font-size:14px;color:#e2e8f0">El juego se ve mucho mejor en horizontal.</p>
+    <button class="action-btn" onclick="document.getElementById('rotate-hint').classList.remove('show')">Continuar así</button>
+</div>
+<div id="level-ribbon" style="display:none">🌿 NIVEL 1 · PATIO DE LOS SUEÑOS</div>
+<div id="power-hint" style="display:none">⚡ PODER: SHIFT</div>
+<div id="story-screen">
+ <div class="story-card">
+  <div style="font-weight:900;color:#b7791f;letter-spacing:1px">🌎 PROYECTO PRAE · I.E. MERCEDITAS GÓMEZ MARTÍNEZ</div>
+  <h2>Una pequeña acción puede cambiar todo el colegio</h2>
+  <p>Era un recreo como cualquier otro. El sol iluminaba los jardines, las flores estaban abiertas y los estudiantes compartían sus meriendas. Pero, al sonar el timbre, algo triste ocurrió: envolturas, botellas y restos de comida quedaron tirados en el patio.</p>
+  <div class="story-scene"><div class="big">🐦🌱</div><div><b>El mensaje de la naturaleza</b><br>Las aves confundieron algunos plásticos con alimento, el viento llevó residuos hasta el río y las plantas comenzaron a quedar rodeadas de basura. Cuando los residuos se mezclan, reciclar es más difícil y el entorno se contamina.</div></div>
+  <p>Entonces apareció <b>Brisa, la guardiana del jardín</b>, y pidió ayuda a Tony, Firulais, Emma y Lucas. «No se trata de buscar culpables. Se trata de aprender, actuar en equipo y demostrar que nuestro colegio puede ser un lugar limpio y saludable».</p>
+  <div class="story-scene"><div class="big">🧤♻️</div><div><b>Tu misión</b><br>Recoge los residuos, identifica qué tipo son, deposítalos en la caneca correcta, evita los obstáculos y recupera los espacios verdes. Los vidrios y objetos peligrosos nunca se tocan: se avisa a un adulto.</div></div>
+  <p style="font-weight:900;color:#287448">¡Cada residuo bien separado suma puntos y cada buena decisión devuelve vida al colegio!</p>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px">
+   <button class="action-btn" id="story-start">🌼 ¡Comenzar la misión!</button>
+   <button class="action-btn secondary" id="story-back">Volver</button>
+  </div>
+ </div>
+</div>
+<div id="shop-screen">
+ <div class="shop-card">
+  <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+   <div><div style="font-weight:900;color:#b7791f">✨ PERSONALIZA TU GUARDIÁN Y HABILIDADES</div><h2>La tienda ecológica</h2></div>
+   <div class="shop-wallet">⭐ <span id="shop-wallet">0</span> eco-puntos</div>
+  </div>
+  <p>Canjea los puntos que ganas clasificando correctamente. Compra cosméticos o desbloquea/potencia los nuevos poderes ecológicos.</p>
+  <div class="shop-grid" id="shop-grid"></div>
+  <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap"><button class="action-btn" id="shop-close">Seguir jugando</button></div>
+ </div>
+</div>
+
+    <script>
+        class SoundFX {
+            constructor() { this.ctx = null; }
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) this.ctx = new AudioContext();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+            }
+            playJump() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                osc.type = 'triangle'; const now = this.ctx.currentTime;
+                osc.frequency.setValueAtTime(140, now); osc.frequency.exponentialRampToValueAtTime(360, now + 0.15);
+                gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.connect(gain); gain.connect(this.ctx.destination); osc.start(now); osc.stop(now + 0.15);
+            }
+            playPickup() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                osc.type = 'sine'; const now = this.ctx.currentTime;
+                osc.frequency.setValueAtTime(320, now); osc.frequency.setValueAtTime(480, now + 0.08);
+                gain.gain.setValueAtTime(0.25, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.connect(gain); gain.connect(this.ctx.destination); osc.start(now); osc.stop(now + 0.2);
+            }
+            playSuccess() {
+                if (!this.ctx) return;
+                [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                    const now = this.ctx.currentTime + (idx * 0.07);
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(freq, now);
+                    gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                    osc.connect(gain); gain.connect(this.ctx.destination); osc.start(now); osc.stop(now + 0.25);
+                });
+            }
+            playError() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                osc.type = 'sawtooth'; const now = this.ctx.currentTime;
+                osc.frequency.setValueAtTime(220, now); osc.frequency.setValueAtTime(160, now + 0.1);
+                gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.28);
+                osc.connect(gain); gain.connect(this.ctx.destination); osc.start(now); osc.stop(now + 0.28);
+            }
+            playPowerup() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                osc.type = 'sine'; const now = this.ctx.currentTime;
+                osc.frequency.setValueAtTime(280, now); osc.frequency.exponentialRampToValueAtTime(840, now + 0.3);
+                gain.gain.setValueAtTime(0.25, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.connect(gain); gain.connect(this.ctx.destination); osc.start(now); osc.stop(now + 0.3);
+            }
+            playHurt() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                osc.type = 'square'; const now = this.ctx.currentTime;
+                osc.frequency.setValueAtTime(180, now); osc.frequency.exponentialRampToValueAtTime(60, now + 0.2);
+                gain.gain.setValueAtTime(0.25, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.connect(gain); gain.connect(this.ctx.destination); osc.start(now); osc.stop(now + 0.2);
+            }
+        }
+        const sfx = new SoundFX();
+        let CURRENT_LEVEL = 1;
+        let ecoCoins = Number(localStorage.getItem('merceditasEcoCoins') || 0);
+
+        // Se incorporan 4 nuevos niveles para un total de 7 niveles con dificultad progresiva
+        const LEVEL_NAMES = [
+            'Patio de los sueños',
+            'La ruta del río',
+            'La gran jornada verde',
+            'Laboratorios y Pasillos',
+            'Canchas y Polideportivo',
+            'Huerta Escolar y Compost',
+            'Cumbre Ambiental Merceditas'
+        ];
+        const LEVEL_DIFFICULTY = [
+            'Fácil',
+            'Intermedio',
+            '¡Reto experto!',
+            'Avanzado',
+            'Desafío Técnico',
+            'Muy Difícil',
+            'Maestría PRAE'
+        ];
+
+        // Se extiende la tienda incorporando los 3 nuevos elementos de poder solicitados
+        const SHOP_ITEMS = [
+            { id: 'flower', name: 'Corona de flores', icon: '🌼', cost: 180, type: 'skin', desc: 'Un toque alegre para tu guardián.' },
+            { id: 'glasses', name: 'Gafas recicladas', icon: '🕶️', cost: 260, type: 'skin', desc: 'Estilo responsable y brillante.' },
+            { id: 'cape', name: 'Capa ecológica', icon: '🦸', cost: 420, type: 'skin', desc: '¡Listo para salvar el patio!' },
+            { id: 'crown', name: 'Corona dorada', icon: '👑', cost: 650, type: 'skin', desc: 'Distinción de Guardián PRAE.' },
+            { id: 'pwr_shield', name: 'Escudo Escolar', icon: '🛡️', cost: 300, type: 'power', desc: 'Poder: Invulnerabilidad temporal adicional al ser atacado o activado.' },
+            { id: 'pwr_magnet', name: 'Imán Verde', icon: '🧲', cost: 450, type: 'power', desc: 'Poder: Atrae residuos cercanos automáticamente hacia tu personaje.' },
+            { id: 'pwr_turbo', name: 'Propulsor Eco', icon: '🚀', cost: 550, type: 'power', desc: 'Poder: Impulso horizontal de alta velocidad con barrido de seguridad.' }
+        ];
+
+        function saveEcoCoins() { localStorage.setItem('merceditasEcoCoins', String(ecoCoins)); }
+
+        function renderShop() {
+            document.getElementById('shop-wallet').textContent = ecoCoins;
+            document.getElementById('shop-grid').innerHTML = SHOP_ITEMS.map(it => {
+                const owned = localStorage.getItem('merceditasOwned_' + it.id) === '1';
+                const equipped = (it.type === 'skin' && localStorage.getItem('merceditasSkin') === it.id) ||
+                                 (it.type === 'power' && localStorage.getItem('merceditasPower') === it.id);
+                
+                let actionLabel = 'Comprar';
+                if (owned) {
+                    actionLabel = equipped ? 'Equipado' : 'Equipar';
+                }
+
+                return `<div class="shop-item">
+                    <div class="skin-icon">${it.icon}</div>
+                    <h3>${it.name}</h3>
+                    <p>${it.desc}</p>
+                    <b>⭐ ${it.cost}</b>
+                    <button class="action-btn ${owned ? 'secondary' : ''}" style="width:100%;margin-top:9px;padding:9px 6px;font-size:11px" data-buy="${it.id}">
+                        ${actionLabel}
+                    </button>
+                </div>`;
+            }).join('');
+
+            document.querySelectorAll('[data-buy]').forEach(btn => btn.addEventListener('click', () => {
+                const item = SHOP_ITEMS.find(x => x.id === btn.dataset.buy);
+                const owned = localStorage.getItem('merceditasOwned_' + item.id) === '1';
+                if (!owned) {
+                    if (ecoCoins < item.cost) {
+                        btn.textContent = 'Te faltan puntos';
+                        return;
+                    }
+                    ecoCoins -= item.cost;
+                    saveEcoCoins();
+                    localStorage.setItem('merceditasOwned_' + item.id, '1');
+                }
+                
+                if (item.type === 'skin') {
+                    localStorage.setItem('merceditasSkin', item.id);
+                    if (player1) player1.activeSkin = item.id;
+                    if (player2) player2.activeSkin = item.id;
+                } else if (item.type === 'power') {
+                    localStorage.setItem('merceditasPower', item.id);
+                    if (player1) player1.equippedPower = item.id;
+                    if (player2) player2.equippedPower = item.id;
+                }
+
+                renderShop();
+            }));
+        }
+
+        function openShop() { renderShop(); document.getElementById('shop-screen').classList.add('show'); STATE.paused = true; }
+        function closeShop() { document.getElementById('shop-screen').classList.remove('show'); if (STATE.gameActive) STATE.paused = false; }
+
+        // Uso de poderes: integra las habilidades de los personajes e incluye los poderes comprables en la tienda
+        function useCharacterPower(player) {
+            if (!player || player.abilityCooldown > 0) return;
+
+            // Integración de Poder Comprado en Tienda
+            const equipped = player.equippedPower;
+            if (equipped === 'pwr_shield') {
+                player.abilityCooldown = 450;
+                player.invulnerableTimer = 300;
+                showFeedback('🛡️ ¡Escudo Escolar Activado! Protección total por 5 segundos.', 'success');
+                createFloatingParticles(player.x + 18, player.y + 20, '#38bdf8', 25);
+                sfx.playPowerup();
+                return;
+            } else if (equipped === 'pwr_magnet') {
+                player.abilityCooldown = 500;
+                player.magnetTimer = 360;
+                showFeedback('🧲 ¡Imán Verde Activado! Atracción magnética de residuos cercana.', 'success');
+                createFloatingParticles(player.x + 18, player.y + 20, '#10b981', 25);
+                sfx.playPowerup();
+                return;
+            } else if (equipped === 'pwr_turbo') {
+                player.abilityCooldown = 400;
+                player.vx = player.facing * 14;
+                player.invulnerableTimer = 120;
+                showFeedback('🚀 ¡Propulsor Eco Activado! Impulso de velocidad máxima.', 'success');
+                createFloatingParticles(player.x + 18, player.y + 20, '#f59e0b', 25);
+                sfx.playPowerup();
+                return;
+            }
+
+            // Poderes Nativos por Personaje
+            player.abilityCooldown = 600;
+            if (player.char.id === 'tony') {
+                player.invulnerableTimer = 300;
+                showFeedback('🛡️ Tony activa su escudo protector. ¡Cruza los obstáculos con cuidado!', 'success');
+            } else if (player.char.id === 'firulais') {
+                player.powerupTimer = 600;
+                showFeedback('💨 ¡Firulais activa su carrera veloz!', 'success');
+            } else if (player.char.id === 'emma') {
+                player.vy = -15;
+                player.isGrounded = false;
+                showFeedback('🐰 ¡Emma usa su súper salto para alcanzar nuevas rutas!', 'success');
+            } else {
+                player.powerupTimer = 420;
+                showFeedback('🌟 ¡Lucas activa su energía guardiana!', 'success');
+            }
+            createFloatingParticles(player.x + 18, player.y + 20, '#facc15', 22);
+            sfx.playPowerup();
+        }
+
+        const BIN_TYPES = {
+            BLANCA: { id: 'blanca', name: 'Caneca Blanca', color: '#ffffff', border: '#cbd5e1', desc: 'Aprovechables limpios (plástico, papel, cartón, latas)' },
+            VERDE: { id: 'verde', name: 'Caneca Verde', color: '#10b981', border: '#047857', desc: 'Orgánicos aprovechables (cáscaras de fruta, comida escolar)' },
+            NEGRA: { id: 'negra', name: 'Caneca Negra', color: '#18181b', border: '#3f3f46', desc: 'No aprovechables (servilletas sucias, paquetes de papas)' },
+            ROJA: { id: 'roja', name: 'Punto de Seguridad', color: '#ef4444', border: '#991b1b', desc: '¡Riesgo! Notificar de inmediato a un profesor' }
+        };
+
+        const CHARACTERS = {
+            tony: { id: 'tony', name: 'Tony, el lobo', title: 'Lobo Alegre', color: '#64748b', emoji: '🐺', badge: 'Ojos bicolor' },
+            firulais: { id: 'firulais', name: 'Firulais, el perro', title: 'Perro Leal', color: '#d97706', emoji: '🐶', badge: 'Leal y protector' },
+            emma: { id: 'emma', name: 'Emma, Coneja', title: 'Coneja Veloz', color: '#f43f5e', emoji: '🐰', badge: 'Blanca con manchas rosadas' },
+            lucas: { id: 'lucas', name: 'Lucas, Puma', title: 'Puma Sabio', color: '#ea580c', emoji: '🐆', badge: 'Fuerte y prudente' }
+        };
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const PLAYER_IMAGES = {
+            tony: new Image(),
+            firulais: new Image(),
+            emma: new Image(),
+            lucas: new Image()
+        };
+        PLAYER_IMAGES.tony.src = 'Tony.png';
+        PLAYER_IMAGES.firulais.src = 'Rocky.png';
+        PLAYER_IMAGES.emma.src = 'emma.png';
+        PLAYER_IMAGES.lucas.src = 'lucas.png';
+
+        const STATE = {
+            mode: 1,
+            p1Char: null,
+            p2Char: null,
+            selectingPlayer: 1,
+            score: 0,
+            requiredItems: 6,
+            depositedItems: 0,
+            gameActive: false,
+            paused: false,
+            feedbackTimeout: null,
+            particles: []
+        };
+
+        class Player {
+            constructor(id, charKey, x, y, controls) {
+                this.id = id;
+                this.char = CHARACTERS[charKey];
+                this.x = x;
+                this.y = y;
+                this.width = 38;
+                this.height = 48;
+                this.vx = 0;
+                this.vy = 0;
+                this.speed = 3.6;
+                this.jumpStrength = -13.8;
+                this.isGrounded = false;
+                this.lives = 3;
+                this.holdingItem = null;
+                this.controls = controls;
+                this.facing = 1;
+                this.invulnerableTimer = 0;
+                this.powerupTimer = 0;
+                this.magnetTimer = 0;
+                this.animFrame = 0;
+                this.abilityCooldown = 0;
+                this.activeSkin = localStorage.getItem('merceditasSkin') || 'none';
+                this.equippedPower = localStorage.getItem('merceditasPower') || 'none';
+            }
+
+            update(gravity, platforms) {
+                if (this.powerupTimer > 0) this.powerupTimer--;
+                if (this.invulnerableTimer > 0) this.invulnerableTimer--;
+                if (this.magnetTimer > 0) this.magnetTimer--;
+                if (this.abilityCooldown > 0) this.abilityCooldown--;
+
+                const currentSpeed = (this.powerupTimer > 0) ? this.speed * 1.45 : this.speed;
+                const currentJump = (this.powerupTimer > 0) ? this.jumpStrength * 1.25 : this.jumpStrength;
+
+                let moving = false;
+                if (keys[this.controls.left]) {
+                    this.vx = -currentSpeed;
+                    this.facing = -1;
+                    moving = true;
+                } else if (keys[this.controls.right]) {
+                    this.vx = currentSpeed;
+                    this.facing = 1;
+                    moving = true;
+                } else {
+                    this.vx *= 0.65;
+                    if (Math.abs(this.vx) < 0.2) this.vx = 0;
+                }
+
+                if (keys[this.controls.jump] && this.isGrounded) {
+                    this.vy = currentJump;
+                    this.isGrounded = false;
+                    sfx.playJump();
+                }
+
+                this.vy += gravity;
+                if (this.vy > 12) this.vy = 12;
+
+                this.x += this.vx;
+                this.checkHorizontalCollisions(platforms);
+
+                this.y += this.vy;
+                this.isGrounded = false;
+                this.checkVerticalCollisions(platforms);
+
+                if (this.x < 10) this.x = 10;
+                if (this.x + this.width > canvas.width - 10) this.x = canvas.width - this.width - 10;
+
+                if (moving) {
+                    this.animFrame = (this.animFrame + 0.2) % 4;
+                } else {
+                    this.animFrame = 0;
+                }
+
+                // Efecto de Imán Verde si está activo
+                if (this.magnetTimer > 0 && !this.holdingItem) {
+                    wasteItems.forEach(item => {
+                        if (!item.collected && getDistance(this, item) < 140) {
+                            item.x += (this.x - item.x) * 0.08;
+                            item.y += (this.y - item.y) * 0.08;
+                        }
+                    });
+                }
+            }
+
+            checkHorizontalCollisions(platforms) {
+                for (let plat of platforms) {
+                    if (this.collidesWith(plat)) {
+                        if (this.vx > 0) this.x = plat.x - this.width;
+                        else if (this.vx < 0) this.x = plat.x + plat.width;
+                    }
+                }
+            }
+
+            checkVerticalCollisions(platforms) {
+                for (let plat of platforms) {
+                    if (this.collidesWith(plat)) {
+                        if (this.vy > 0) {
+                            this.y = plat.y - this.height;
+                            this.vy = 0;
+                            this.isGrounded = true;
+                        } else if (this.vy < 0) {
+                            this.y = plat.y + plat.height;
+                            this.vy = 0;
+                        }
+                    }
+                }
+            }
+
+            collidesWith(rect) {
+                return this.x < rect.x + rect.width &&
+                       this.x + this.width > rect.x &&
+                       this.y < rect.y + rect.height &&
+                       this.y + this.height > rect.y;
+            }
+
+            hit() {
+                if (this.invulnerableTimer > 0) return;
+                this.lives--;
+                this.invulnerableTimer = 60;
+                sfx.playHurt();
+                createFloatingParticles(this.x + this.width/2, this.y + this.height/2, '#ef4444', 12);
+                updateHudLives();
+                if (this.lives <= 0) {
+                    checkGameOver();
+                }
+            }
+
+            draw(ctx) {
+                if (this.invulnerableTimer > 0 && Math.floor(this.invulnerableTimer / 4) % 2 === 0) return;
+
+                ctx.save();
+                ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+                if (this.facing === -1) ctx.scale(-1, 1);
+
+                if (this.powerupTimer > 0 || this.magnetTimer > 0) {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.width * 0.8, 0, Math.PI * 2);
+                    ctx.fillStyle = this.magnetTimer > 0 ? 'rgba(16, 185, 129, 0.35)' : 'rgba(56, 189, 248, 0.35)';
+                    ctx.strokeStyle = this.magnetTimer > 0 ? '#10b981' : '#38bdf8';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([4, 4]);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                const charImage = PLAYER_IMAGES[this.char.id];
+                const bob = Math.sin(this.animFrame * Math.PI) * 2;
+
+                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                ctx.beginPath();
+                ctx.ellipse(0, this.height/2 - 2, 14, 5, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                if (charImage && charImage.complete && charImage.naturalWidth > 0) {
+                    const maxSpriteWidth = 64;
+                    const maxSpriteHeight = 64;
+                    const imageRatio = charImage.naturalWidth / charImage.naturalHeight;
+                    let spriteWidth = maxSpriteWidth;
+                    let spriteHeight = spriteWidth / imageRatio;
+
+                    if (spriteHeight > maxSpriteHeight) {
+                        spriteHeight = maxSpriteHeight;
+                        spriteWidth = spriteHeight * imageRatio;
+                    }
+
+                    ctx.drawImage(charImage, -spriteWidth / 2, this.height / 2 - spriteHeight + bob, spriteWidth, spriteHeight);
+                }
+
+                const skinMarks = { flower: '🌼', cape: '🦸', crown: '👑', glasses: '🕶️' };
+                if (skinMarks[this.activeSkin]) {
+                    ctx.font = '17px Arial'; ctx.textAlign = 'center';
+                    ctx.fillText(skinMarks[this.activeSkin], 0, -31 + bob);
+                }
+                ctx.restore();
+
+                if (this.holdingItem) {
+                    ctx.save();
+                    const floatBob = Math.sin(Date.now() / 150) * 3;
+                    const itemX = this.x + this.width / 2;
+                    const itemY = this.y - 18 + floatBob;
+
+                    ctx.beginPath();
+                    ctx.arc(itemX, itemY, 14, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                    ctx.strokeStyle = '#0284c7';
+                    ctx.lineWidth = 1.5;
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.font = '14px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(this.holdingItem.emoji, itemX, itemY + 1);
+
+                    ctx.font = '9px Fredoka One, sans-serif';
+                    ctx.fillStyle = '#0f172a';
+                    ctx.fillText('¡Depositar!', itemX, itemY - 18);
+                    ctx.restore();
+                }
+
+                ctx.save();
+                ctx.font = '10px "Press Start 2P", monospace';
+                ctx.fillStyle = this.id === 1 ? '#60a5fa' : '#f59e0b';
+                ctx.textAlign = 'center';
+                ctx.fillText(`P${this.id}`, this.x + this.width/2, this.y - (this.holdingItem ? 38 : 22));
+                ctx.restore();
+            }
+        }
+
+        class TrashBin {
+            constructor(typeKey, x, y) {
+                this.info = BIN_TYPES[typeKey];
+                this.x = x;
+                this.y = y;
+                this.width = 46;
+                this.height = 62;
+                this.label = typeKey.toLowerCase();
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.beginPath();
+                ctx.ellipse(this.x + this.width/2, this.y + this.height - 2, 20, 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = this.info.color;
+                ctx.strokeStyle = this.info.border;
+                ctx.lineWidth = 3;
+
+                ctx.beginPath();
+                ctx.moveTo(this.x + 4, this.y + 14);
+                ctx.lineTo(this.x + this.width - 4, this.y + 14);
+                ctx.lineTo(this.x + this.width - 8, this.y + this.height);
+                ctx.lineTo(this.x + 8, this.y + this.height);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = this.info.border;
+                ctx.fillRect(this.x, this.y + 4, this.width, 10);
+                ctx.fillRect(this.x + this.width/2 - 6, this.y, 12, 4);
+
+                ctx.fillStyle = (this.info.id === 'blanca') ? '#1e293b' : '#ffffff';
+                ctx.font = 'bold 11px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(this.info.id === 'roja' ? '⚠️' : '♻️', this.x + this.width/2, this.y + 35);
+
+                ctx.font = '8px "Press Start 2P", monospace';
+                ctx.fillText(this.info.id.toUpperCase(), this.x + this.width/2, this.y + 50);
+                ctx.restore();
+            }
+        }
+
+        class WasteItem {
+            constructor(id, name, type, emoji, x, y, tipOk, tipBad) {
+                this.id = id;
+                this.name = name;
+                this.targetBin = type;
+                this.emoji = emoji;
+                this.x = x;
+                this.y = y;
+                this.width = 44;
+                this.height = 44;
+                this.collected = false;
+                this.tipOk = tipOk;
+                this.tipBad = tipBad;
+            }
+
+            draw(ctx) {
+                if (this.collected) return;
+                const bob = Math.sin((Date.now() + this.x * 10) / 200) * 4;
+                const cx = this.x + this.width / 2;
+                const cy = this.y + this.height / 2 + bob;
+                const category = {
+                    blanca: { color: '#eaf5ff', edge: '#2878b8', tag: '♻ APROVECHABLE' },
+                    verde:  { color: '#e5f8d9', edge: '#398b45', tag: '● ORGÁNICO' },
+                    negra:  { color: '#f1e9dc', edge: '#51483f', tag: '● NO APROVECHABLE' },
+                    roja:   { color: '#ffe3df', edge: '#d33b35', tag: '⚠ PELIGROSO' }
+                }[this.targetBin] || { color: '#fff7df', edge: '#806b45', tag: 'RESIDUO' };
+
+                ctx.save();
+                ctx.fillStyle = 'rgba(28, 45, 25, .28)';
+                ctx.beginPath();
+                ctx.ellipse(cx, this.y + this.height + 5, 22, 7, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                const pulse = 2 + Math.sin(Date.now() / 150 + this.id) * 2;
+                ctx.beginPath();
+                ctx.arc(cx, cy, 25 + pulse, 0, Math.PI * 2);
+                ctx.strokeStyle = category.edge;
+                ctx.lineWidth = 3;
+                ctx.setLineDash([5, 4]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = '#fffdf3';
+                ctx.strokeStyle = category.edge;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.roundRect(this.x - 2, this.y - 2 + bob, 48, 48, 13);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.font = '31px "Apple Color Emoji","Segoe UI Emoji",Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.shadowColor = 'rgba(0,0,0,.22)';
+                ctx.shadowBlur = 3;
+                ctx.fillText(this.emoji, cx, cy);
+                ctx.shadowBlur = 0;
+
+                const label = this.name.length > 18 ? this.name.slice(0, 17) + '…' : this.name;
+                ctx.font = 'bold 12px Quicksand, sans-serif';
+                const labelW = Math.max(62, ctx.measureText(label).width + 18);
+                ctx.fillStyle = 'rgba(255,253,243,.97)';
+                ctx.strokeStyle = category.edge;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.roundRect(cx - labelW/2, this.y + 44 + bob, labelW, 21, 8);
+                ctx.fill();
+                ctx.stroke();
+                ctx.fillStyle = '#243b2c';
+                ctx.fillText(label, cx, this.y + 54.5 + bob);
+
+                ctx.font = 'bold 8px Quicksand, sans-serif';
+                const tagW = Math.max(66, ctx.measureText(category.tag).width + 12);
+                ctx.fillStyle = category.edge;
+                ctx.beginPath();
+                ctx.roundRect(cx - tagW/2, this.y + 67 + bob, tagW, 15, 6);
+                ctx.fill();
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(category.tag, cx, this.y + 74.5 + bob);
+
+                ctx.fillStyle = '#fff4a8';
+                ctx.beginPath();
+                ctx.arc(this.x + 39, this.y + 2 + bob, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // Variación e incorporación de nuevos obstáculos
+        class TrashMonster {
+            constructor(x, y, range, axis = 'horizontal', type = 'bag') {
+                this.startX = x;
+                this.startY = y;
+                this.x = x;
+                this.y = y;
+                this.width = 32;
+                this.height = 32;
+                this.range = range;
+                this.speed = 1.3;
+                this.dir = 1;
+                this.jumpTimer = 0;
+                this.axis = axis; // 'horizontal' o 'vertical'
+                this.type = type; // 'bag' (bolsa saltarina) o 'wasp' (avispa/mosca de residuos)
+            }
+
+            update() {
+                if (this.axis === 'horizontal') {
+                    this.x += this.speed * this.dir;
+                    if (this.x > this.startX + this.range) this.dir = -1;
+                    else if (this.x < this.startX) this.dir = 1;
+                } else {
+                    this.y += this.speed * this.dir;
+                    if (this.y > this.startY + this.range) this.dir = -1;
+                    else if (this.y < this.startY) this.dir = 1;
+                }
+                this.jumpTimer += 0.08;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                const hop = (this.type === 'bag') ? Math.abs(Math.sin(this.jumpTimer)) * 6 : Math.sin(this.jumpTimer * 2) * 4;
+
+                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                ctx.beginPath();
+                ctx.ellipse(this.x + this.width/2, this.y + this.height, 12, 4, 0, 0, Math.PI*2);
+                ctx.fill();
+
+                if (this.type === 'wasp') {
+                    // Nuevo obstáculo: Insecto Nocivo de Contaminación
+                    ctx.fillStyle = '#eab308';
+                    ctx.strokeStyle = '#854d0e';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(this.x + this.width/2, this.y + this.height/2 - hop, 12, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Franjas neuras
+                    ctx.fillStyle = '#1e293b';
+                    ctx.fillRect(this.x + 10, this.y + 8 - hop, 12, 4);
+                    ctx.fillRect(this.x + 10, this.y + 16 - hop, 12, 4);
+
+                    // Alas
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.beginPath();
+                    ctx.ellipse(this.x + 6, this.y + 4 - hop, 8, 4, -Math.PI/4, 0, Math.PI*2);
+                    ctx.ellipse(this.x + 26, this.y + 4 - hop, 8, 4, Math.PI/4, 0, Math.PI*2);
+                    ctx.fill();
+                } else {
+                    // Obstáculo Estándar: Bolsa de basuras
+                    ctx.fillStyle = '#475569';
+                    ctx.strokeStyle = '#1e293b';
+                    ctx.lineWidth = 2;
+
+                    ctx.beginPath();
+                    ctx.arc(this.x + this.width/2, this.y + this.height/2 - hop, 14, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#334155';
+                    ctx.fillRect(this.x + this.width/2 - 4, this.y - hop, 8, 5);
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(this.x + 8, this.y + 10 - hop, 5, 5);
+                    ctx.fillRect(this.x + 19, this.y + 10 - hop, 5, 5);
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(this.x + (this.dir === 1 ? 10 : 8), this.y + 12 - hop, 2, 2);
+                    ctx.fillRect(this.x + (this.dir === 1 ? 21 : 19), this.y + 12 - hop, 2, 2);
+                }
+                ctx.restore();
+            }
+        }
+
+        class WaterPowerup {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 26;
+                this.height = 26;
+                this.active = true;
+            }
+
+            draw(ctx) {
+                if (!this.active) return;
+                const bob = Math.sin(Date.now() / 180) * 4;
+
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(this.x + 13, this.y + 13 + bob, 15, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.4)';
+                ctx.fill();
+
+                ctx.font = '22px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('💧', this.x + 13, this.y + 13 + bob);
+
+                ctx.font = 'bold 9px Quicksand, sans-serif';
+                ctx.fillStyle = '#0284c7';
+                ctx.fillText('Agua Limpia', this.x + 13, this.y + 32 + bob);
+                ctx.restore();
+            }
+        }
+
+        // Extensión de Plataformas: soporte para plataformas móviles de patrulla
+        class Platform {
+            constructor(x, y, w, h, type = 'brick', isMoving = false, moveRange = 0) {
+                this.startX = x;
+                this.x = x;
+                this.y = y;
+                this.width = w;
+                this.height = h;
+                this.type = type;
+                this.isMoving = isMoving;
+                this.moveRange = moveRange;
+                this.moveDir = 1;
+                this.speed = 1.2;
+            }
+
+            update() {
+                if (this.isMoving) {
+                    this.x += this.speed * this.moveDir;
+                    if (this.x > this.startX + this.moveRange) this.moveDir = -1;
+                    else if (this.x < this.startX) this.moveDir = 1;
+                }
+            }
+
+            draw(ctx) {
+                ctx.save();
+                if (this.type === 'ground') {
+                    ctx.fillStyle = '#15803d';
+                    ctx.fillRect(this.x, this.y, this.width, 10);
+                    ctx.fillStyle = '#78350f';
+                    ctx.fillRect(this.x, this.y + 10, this.width, this.height - 10);
+                    ctx.fillStyle = '#22c55e';
+                    for (let px = this.x; px < this.x + this.width; px += 16) {
+                        ctx.fillRect(px + 4, this.y - 3, 4, 3);
+                    }
+                } else if (this.type === 'court') {
+                    ctx.fillStyle = '#0284c7';
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(this.x + 2, this.y + 2, this.width - 4, this.height - 4);
+                } else {
+                    ctx.fillStyle = '#b45309';
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                    ctx.strokeStyle = '#78350f';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(this.x, this.y, this.width, this.height);
+                    ctx.fillStyle = '#d97706';
+                    for (let bx = this.x; bx < this.x + this.width; bx += 24) {
+                        ctx.fillRect(bx, this.y + 2, 22, this.height - 4);
+                    }
+                }
+                ctx.restore();
+            }
+        }
+
+        const keys = {};
+
+        window.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+                e.preventDefault();
+            }
+            if (STATE.gameActive && !STATE.paused) {
+                if (e.code === 'ArrowDown' || e.code === 'Space') handleInteraction(player1);
+                if (STATE.mode === 2 && (e.code === 'KeyS' || e.code === 'KeyE')) handleInteraction(player2);
+            }
+        });
+
+        window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+        function bindTouchButton(id, code) {
+            const btn = document.getElementById(id);
+            if (!btn) return;
+            btn.addEventListener('touchstart', (e) => { e.preventDefault(); keys[code] = true; sfx.init(); }, { passive: false });
+            btn.addEventListener('touchend', (e) => { e.preventDefault(); keys[code] = false; }, { passive: false });
+            btn.addEventListener('touchcancel', (e) => { keys[code] = false; });
+            btn.addEventListener('mousedown', (e) => { keys[code] = true; sfx.init(); });
+            btn.addEventListener('mouseleave', () => { keys[code] = false; });
+            btn.addEventListener('mouseup', (e) => { keys[code] = false; });
+        }
+
+        bindTouchButton('touch-left', 'ArrowLeft');
+        bindTouchButton('touch-right', 'ArrowRight');
+        bindTouchButton('touch-jump', 'ArrowUp');
+
+        document.getElementById('touch-interact')?.addEventListener('click', () => {
+            if (STATE.gameActive && !STATE.paused && player1) handleInteraction(player1);
+        });
+
+        let platforms = [];
+        let trashBins = [];
+        let wasteItems = [];
+        let enemies = [];
+        let powerups = [];
+        let player1 = null;
+        let player2 = null;
+
+        // Construcción extendida de niveles (Progresión completa en 7 niveles)
+        function buildSchoolLevel() {
+            platforms = []; trashBins = []; wasteItems = []; enemies = []; powerups = []; STATE.particles = [];
+            
+            // Base del suelo
+            platforms.push(new Platform(0, 480, canvas.width, 60, 'ground'));
+            
+            // Layout de plataformas según nivel
+            platforms.push(new Platform(80, 370, 200, 18, 'brick'));
+            platforms.push(new Platform(340, 310, 260, 18, 'court'));
+            platforms.push(new Platform(670, 370, 210, 18, 'brick'));
+            platforms.push(new Platform(400, 190, 160, 18, 'wood'));
+
+            if (CURRENT_LEVEL >= 2) {
+                platforms.push(new Platform(35, 270, 150, 16, 'wood'));
+                platforms.push(new Platform(760, 245, 150, 16, 'court'));
+            }
+            if (CURRENT_LEVEL >= 3) {
+                platforms.push(new Platform(220, 205, 150, 16, 'brick'));
+                platforms.push(new Platform(610, 155, 170, 16, 'wood'));
+            }
+            if (CURRENT_LEVEL >= 4) {
+                // Incorpora plataformas móviles horizontales
+                platforms.push(new Platform(100, 140, 130, 16, 'court', true, 120));
+                platforms.push(new Platform(500, 100, 140, 16, 'wood', true, 140));
+            }
+            if (CURRENT_LEVEL >= 5) {
+                platforms.push(new Platform(280, 80, 150, 16, 'brick'));
+                platforms.push(new Platform(750, 110, 130, 16, 'court'));
+            }
+
+            trashBins.push(
+                new TrashBin('BLANCA', 120, 418),
+                new TrashBin('VERDE', 460, 418),
+                new TrashBin('NEGRA', 740, 308),
+                new TrashBin('ROJA', 870, 418)
+            );
+
+            // Residuos por niveles
+            const baseItems = [
+                [1, 'Botella PET', 'blanca', '🧴', 150, 450, '¡Botella limpia a la blanca!', 'El plástico limpio va en la blanca.'],
+                [2, 'Cáscara banano', 'verde', '🍌', 230, 340, '¡La cáscara se convierte en abono!', 'Los restos de fruta van en la verde.'],
+                [3, 'Caja de jugo', 'blanca', '🧃', 420, 280, '¡El envase limpio se aprovecha!', 'El cartón limpio va en la blanca.'],
+                [4, 'Paquete de papas', 'negra', '🍟', 710, 340, '¡Correcto! Este empaque va a la negra.', 'Los empaques metalizados van en la negra.'],
+                [5, 'Servilleta sucia', 'negra', '🧻', 350, 450, '¡Bien! La servilleta sucia va a la negra.', 'El papel sucio va en la negra.'],
+                [6, 'Vidrio roto', 'roja', '⚠️', 600, 450, '¡Avisaste al adulto! Nunca se toca el vidrio.', '¡No lo recojas! Avisa a un profesor.']
+            ];
+            const extraL2 = [
+                [7, 'Botella de agua', 'blanca', '🥤', 80, 245, '¡Muy bien! Botella limpia a la blanca.', 'Los envases limpios van a la blanca.'],
+                [8, 'Cáscara de naranja', 'verde', '🍊', 790, 210, '¡La naturaleza agradece este compost!', 'Los restos de fruta van a la verde.']
+            ];
+            const extraL3 = [
+                [9, 'Hoja de cuaderno', 'blanca', '📄', 270, 180, '¡El papel limpio se puede aprovechar!', 'El papel limpio va a la blanca.'],
+                [10, 'Restos de manzana', 'verde', '🍎', 650, 130, '¡Excelente separación orgánica!', 'Los restos de fruta van a la verde.'],
+                [11, 'Envoltura metalizada', 'negra', '🍬', 900, 450, '¡A la negra! Así evitamos mezclar residuos.', 'La envoltura metalizada va a la negra.']
+            ];
+            const extraL4 = [
+                [12, 'Lata de gaseosa', 'blanca', '🥫', 140, 100, '¡Lata limpia a la blanca!', 'El metal limpio va a la blanca.'],
+                [13, 'Cáscara de piña', 'verde', '🍍', 540, 60, '¡Excelente abono orgánico!', 'Las frutas van a la verde.']
+            ];
+            const extraL5 = [
+                [14, 'Papel arrugado', 'blanca', '📜', 310, 40, '¡Papel seco a la blanca!', 'El papel seco va a la blanca.'],
+                [15, 'Residuo de laboratorio', 'roja', '☣️', 770, 70, '¡Reportado! Sustancia peligrosa.', 'Las sustancias químicas van a la roja.']
+            ];
+            const extraL6 = [
+                [16, 'Cartón de empaque', 'blanca', '📦', 450, 150, '¡Cartón a la blanca!', 'El cartón seco va a la blanca.'],
+                [17, 'Chicle usado', 'negra', '🍬', 180, 230, '¡Chicle a la negra!', 'El chicle va a la negra.']
+            ];
+            const extraL7 = [
+                [18, 'Pila usada', 'roja', '🔋', 820, 330, '¡Excelente! Objeto tóxico aislado.', 'Las pilas van a la roja.'],
+                [19, 'Cáscara de aguacate', 'verde', '🥑', 380, 270, '¡Compostaje perfecto!', 'Restos orgánicos van a la verde.']
+            ];
+
+            let levelPool = [...baseItems];
+            if (CURRENT_LEVEL >= 2) levelPool = levelPool.concat(extraL2);
+            if (CURRENT_LEVEL >= 3) levelPool = levelPool.concat(extraL3);
+            if (CURRENT_LEVEL >= 4) levelPool = levelPool.concat(extraL4);
+            if (CURRENT_LEVEL >= 5) levelPool = levelPool.concat(extraL5);
+            if (CURRENT_LEVEL >= 6) levelPool = levelPool.concat(extraL6);
+            if (CURRENT_LEVEL >= 7) levelPool = levelPool.concat(extraL7);
+
+            levelPool.forEach(arr => wasteItems.push(new WasteItem(...arr)));
+            STATE.requiredItems = wasteItems.length;
+
+            // Enemigos progresivos y patrones variados
+            enemies.push(new TrashMonster(250, 448, 120, 'horizontal', 'bag'));
+            enemies.push(new TrashMonster(380, 278, 140, 'horizontal', 'bag'));
+
+            if (CURRENT_LEVEL >= 2) enemies.push(new TrashMonster(570, 448, 170, 'horizontal', 'bag'));
+            if (CURRENT_LEVEL >= 3) {
+                enemies.push(new TrashMonster(700, 338, 150, 'horizontal', 'bag'));
+                enemies.forEach(e => e.speed = 1.8);
+            }
+            if (CURRENT_LEVEL >= 4) {
+                // Inserción de obstáculos de patrulla vertical y avispas nocivas
+                enemies.push(new TrashMonster(480, 120, 160, 'vertical', 'wasp'));
+            }
+            if (CURRENT_LEVEL >= 5) {
+                enemies.push(new TrashMonster(200, 180, 140, 'vertical', 'wasp'));
+                enemies.forEach(e => e.speed = 2.2);
+            }
+            if (CURRENT_LEVEL >= 6) {
+                enemies.push(new TrashMonster(650, 220, 120, 'horizontal', 'wasp'));
+            }
+            if (CURRENT_LEVEL >= 7) {
+                enemies.push(new TrashMonster(320, 100, 200, 'horizontal', 'wasp'));
+                enemies.forEach(e => e.speed = 2.5);
+            }
+
+            // Potenciadores
+            powerups.push(new WaterPowerup(470, 150));
+            if (CURRENT_LEVEL >= 2) powerups.push(new WaterPowerup(820, 190));
+            if (CURRENT_LEVEL >= 4) powerups.push(new WaterPowerup(240, 160));
+            if (CURRENT_LEVEL >= 6) powerups.push(new WaterPowerup(680, 120));
+
+            const p1Keys = { left: 'ArrowLeft', right: 'ArrowRight', jump: 'ArrowUp', interact: 'ArrowDown' };
+            player1 = new Player(1, STATE.p1Char || 'tony', 50, 400, p1Keys);
+            
+            if (STATE.mode === 2) {
+                const p2Keys = { left: 'KeyA', right: 'KeyD', jump: 'KeyW', interact: 'KeyS' };
+                player2 = new Player(2, STATE.p2Char || 'firulais', 120, 400, p2Keys);
+                document.getElementById('hud-p2').classList.remove('hidden');
+                document.getElementById('hud-p2-keys').classList.remove('hidden');
+            } else {
+                player2 = null;
+                document.getElementById('hud-p2').classList.add('hidden');
+                document.getElementById('hud-p2-keys').classList.add('hidden');
+            }
+
+            if (CURRENT_LEVEL === 1) STATE.score = 0;
+            STATE.depositedItems = 0;
+            updateHudScore();
+            updateHudProgress();
+            updateHudLives();
+
+            document.getElementById('level-ribbon').style.display = 'block';
+            document.getElementById('level-ribbon').textContent = `🌿 NIVEL ${CURRENT_LEVEL} · ${LEVEL_NAMES[CURRENT_LEVEL-1]} · ${LEVEL_DIFFICULTY[CURRENT_LEVEL-1]}`;
+            document.getElementById('power-hint').style.display = 'block';
+        }
+
+        function handleInteraction(player) {
+            if (!player || player.lives <= 0) return;
+
+            if (!player.holdingItem) {
+                for (let item of wasteItems) {
+                    if (!item.collected && getDistance(player, item) < 55) {
+                        item.collected = true;
+                        player.holdingItem = item;
+                        sfx.playPickup();
+                        showFeedback(`Recogiste: ${item.name}. ¡Llévalo a su caneca! 🏃`, 'info');
+                        updateHudItem(player);
+                        return;
+                    }
+                }
+            } else {
+                for (let bin of trashBins) {
+                    if (getDistance(player, bin) < 65) {
+                        const item = player.holdingItem;
+
+                        if (item.targetBin === 'roja') {
+                            if (bin.info.id === 'roja') {
+                                sfx.playSuccess();
+                                STATE.score += 250; ecoCoins += 250; saveEcoCoins();
+                                STATE.depositedItems++;
+                                showFeedback(`🛡️ ${item.tipOk}`, 'success');
+                                createFloatingParticles(bin.x + bin.width/2, bin.y + 10, '#ef4444', 20);
+                                player.holdingItem = null;
+                                updateHudItem(player);
+                                updateHudScore();
+                                updateHudProgress();
+                                checkVictory();
+                            } else {
+                                sfx.playError();
+                                showFeedback(`⚠️ ¡Cuidado! Es un residuo con riesgo. No va en la ${bin.info.name}. Llévalo al Punto de Seguridad Rojo.`, 'warning');
+                            }
+                            return;
+                        }
+
+                        if (bin.info.id === item.targetBin) {
+                            sfx.playSuccess();
+                            STATE.score += 150; ecoCoins += 150; saveEcoCoins();
+                            STATE.depositedItems++;
+                            showFeedback(`✨ ${item.tipOk}`, 'success');
+                            createFloatingParticles(bin.x + bin.width/2, bin.y + 10, bin.info.color, 16);
+                            player.holdingItem = null;
+                            updateHudItem(player);
+                            updateHudScore();
+                            updateHudProgress();
+                            checkVictory();
+                        } else {
+                            sfx.playError();
+                            showFeedback(`💡 ¡Casi! ${item.tipBad}`, 'warning');
+                        }
+                        return;
+                    }
+                }
+            }
+        }
+
+        function getDistance(a, b) {
+            const ax = a.x + (a.width || 0) / 2;
+            const ay = a.y + (a.height || 0) / 2;
+            const bx = b.x + (b.width || 0) / 2;
+            const by = b.y + (b.height || 0) / 2;
+            return Math.hypot(ax - bx, ay - by);
+        }
+
+        function showFeedback(text, type = 'info') {
+            const toast = document.getElementById('feedback-toast');
+            if (!toast) return;
+
+            toast.classList.remove('hidden', 'bg-emerald-900/90', 'border-emerald-400', 'text-emerald-200',
+                                   'bg-amber-900/90', 'border-amber-400', 'text-amber-200',
+                                   'bg-blue-900/90', 'border-blue-400', 'text-blue-200');
+
+            if (type === 'success') {
+                toast.classList.add('bg-emerald-900/95', 'border-emerald-400', 'text-emerald-100');
+            } else if (type === 'warning') {
+                toast.classList.add('bg-amber-900/95', 'border-amber-400', 'text-amber-100');
+            } else {
+                toast.classList.add('bg-blue-900/95', 'border-blue-400', 'text-blue-100');
+            }
+
+            toast.innerHTML = text;
+            toast.classList.remove('hidden');
+
+            clearTimeout(STATE.feedbackTimeout);
+            STATE.feedbackTimeout = setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3500);
+        }
+
+        function createFloatingParticles(x, y, color, count = 10) {
+            for (let i = 0; i < count; i++) {
+                STATE.particles.push({
+                    x: x, y: y,
+                    vx: (Math.random() - 0.5) * 5,
+                    vy: (Math.random() - 0.8) * 5,
+                    size: Math.random() * 4 + 2,
+                    color: color,
+                    alpha: 1,
+                    decay: Math.random() * 0.03 + 0.02
+                });
+            }
+        }
+
+        function updateAndDrawParticles(ctx) {
+            for (let i = STATE.particles.length - 1; i >= 0; i--) {
+                const p = STATE.particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= p.decay;
+
+                if (p.alpha <= 0) {
+                    STATE.particles.splice(i, 1);
+                    continue;
+                }
+
+                ctx.save();
+                ctx.globalAlpha = p.alpha;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function drawSchoolBackground(ctx) {
+            const palettes = [
+                ['#f8dfad', '#fff0c8', '#8fbd63', '#4d9a58'],
+                ['#b9e6e4', '#e4f2cf', '#6fae72', '#367e63'],
+                ['#f5c9b7', '#ffe6b8', '#8bbd67', '#2e805d'],
+                ['#d8b4fe', '#f3e8ff', '#7e22ce', '#6b21a8'],
+                ['#fed7aa', '#ffedd5', '#ea580c', '#c2410c'],
+                ['#a7f3d0', '#ecfdf5', '#047857', '#065f46'],
+                ['#fef08a', '#fefce8', '#ca8a04', '#a16207']
+            ][(CURRENT_LEVEL - 1) % 7];
+
+            const sky = ctx.createLinearGradient(0, 0, 0, 540);
+            sky.addColorStop(0, palettes[0]);
+            sky.addColorStop(1, palettes[1]);
+            ctx.fillStyle = sky;
+            ctx.fillRect(0, 0, 960, 540);
+
+            ctx.fillStyle = '#f6a52f'; ctx.beginPath(); ctx.arc(835, 78, 43, 0, Math.PI*2); ctx.fill();
+
+            for (let i = 0; i < 5; i++) {
+                let x = 90 + i * 205, y = 65 + (i % 2) * 65;
+                ctx.fillStyle = '#f4a0a9'; ctx.beginPath();
+                ctx.arc(x, y, 25, 0, Math.PI*2); ctx.arc(x+28, y-8, 30, 0, Math.PI*2); ctx.arc(x+58, y, 24, 0, Math.PI*2); ctx.fill();
+                ctx.strokeStyle = '#e96c61'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(x-4, y+4);
+                ctx.quadraticCurveTo(x+15, y-28, x+28, y+5); ctx.quadraticCurveTo(x+42, y-25, x+57, y+6); ctx.stroke();
+            }
+
+            ctx.fillStyle = '#5e9d83'; ctx.beginPath(); ctx.moveTo(0, 260);
+            ctx.quadraticCurveTo(210, 170, 390, 260); ctx.quadraticCurveTo(650, 130, 960, 235); ctx.lineTo(960, 350); ctx.lineTo(0, 350); ctx.fill();
+            ctx.strokeStyle = '#b5c88b'; ctx.lineWidth = 9; ctx.beginPath(); ctx.moveTo(420, 255); ctx.quadraticCurveTo(650, 190, 960, 245); ctx.stroke();
+            
+            ctx.fillStyle = palettes[2]; ctx.beginPath(); ctx.moveTo(0, 330);
+            ctx.quadraticCurveTo(240, 275, 480, 340); ctx.quadraticCurveTo(730, 280, 960, 335); ctx.lineTo(960, 480); ctx.lineTo(0, 480); ctx.fill();
+
+            if (CURRENT_LEVEL % 2 === 0) {
+                ctx.fillStyle = '#51b9c4'; ctx.beginPath(); ctx.moveTo(0, 395);
+                ctx.quadraticCurveTo(240, 345, 470, 400); ctx.quadraticCurveTo(700, 450, 960, 380); ctx.lineTo(960, 440);
+                ctx.quadraticCurveTo(680, 505, 440, 450); ctx.quadraticCurveTo(200, 400, 0, 455); ctx.fill();
+            } else {
+                ctx.fillStyle = '#70bfc4'; ctx.beginPath(); ctx.moveTo(0, 410);
+                ctx.quadraticCurveTo(220, 380, 430, 415); ctx.quadraticCurveTo(700, 450, 960, 405); ctx.lineTo(960, 455);
+                ctx.quadraticCurveTo(650, 500, 400, 455); ctx.quadraticCurveTo(170, 430, 0, 465); ctx.fill();
+            }
+
+            for (let i = 0; i < 18; i++) {
+                let x = (i * 59 + 25) % 960, y = 470 + (i % 3) * 12;
+                ctx.fillStyle = i % 2 ? '#2f8b4d' : '#438f4d'; ctx.beginPath(); ctx.arc(x, y, 20 + (i % 3) * 4, 0, Math.PI*2); ctx.fill();
+                ctx.strokeStyle = '#d4df4d'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x, y+8); ctx.lineTo(x, y-12); ctx.stroke();
+                ctx.fillStyle = ['#f5f0df', '#f7a1a7', '#f4c84e'][i % 3]; ctx.beginPath(); ctx.arc(x, y-15, 7, 0, Math.PI*2); ctx.fill();
+            }
+
+            ctx.fillStyle = '#f3e5c5'; ctx.fillRect(330, 250, 300, 145);
+            ctx.fillStyle = '#d97858'; ctx.beginPath(); ctx.moveTo(300, 252); ctx.lineTo(480, 185); ctx.lineTo(660, 252); ctx.closePath(); ctx.fill();
+            ctx.fillStyle = '#fff2d4'; ctx.fillRect(365, 275, 62, 48); ctx.fillRect(450, 275, 62, 48); ctx.fillRect(535, 275, 62, 48);
+            ctx.fillStyle = '#62b6c1';
+            [365, 450, 535].forEach(x => {
+                ctx.fillRect(x, 275, 62, 48); ctx.strokeStyle = '#fff'; ctx.lineWidth = 4; ctx.strokeRect(x, 275, 62, 48);
+                ctx.beginPath(); ctx.moveTo(x+31, 275); ctx.lineTo(x+31, 323); ctx.stroke();
+            });
+            ctx.fillStyle = '#9d6448'; ctx.fillRect(455, 335, 50, 60);
+            ctx.fillStyle = '#fff3d5'; ctx.font = 'bold 12px Quicksand'; ctx.textAlign = 'center'; ctx.fillText('NUESTRO COLEGIO', 480, 245);
+
+            drawTree(ctx, 75, 470);
+            drawTree(ctx, 875, 470);
+
+            ctx.fillStyle = 'rgba(255,255,255,.7)';
+            for (let i = 0; i < 24; i++) {
+                let x = (i * 83 + 17) % 960, y = (i * 47 + 20) % 520;
+                ctx.fillRect(x, y, 3, 3);
+            }
+        }
+
+        function drawTree(ctx, x, groundY) {
+            ctx.fillStyle = '#78350f';
+            ctx.fillRect(x - 8, groundY - 70, 16, 70);
+            ctx.fillStyle = '#16a34a';
+            ctx.beginPath();
+            ctx.arc(x, groundY - 85, 32, 0, Math.PI * 2);
+            ctx.arc(x - 18, groundY - 65, 25, 0, Math.PI * 2);
+            ctx.arc(x + 18, groundY - 65, 25, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        const GRAVITY = 0.42;
+
+        function gameLoop() {
+            if (STATE.gameActive && !STATE.paused) {
+                // Actualizar movimiento de plataformas dinámicas
+                platforms.forEach(plat => plat.update());
+
+                if (player1 && player1.lives > 0) {
+                    player1.update(GRAVITY, platforms);
+
+                    for (let enemy of enemies) {
+                        if (player1.collidesWith(enemy)) {
+                            player1.hit();
+                            player1.vy = -6;
+                            player1.vx = (player1.x < enemy.x) ? -5 : 5;
+                        }
+                    }
+
+                    for (let pup of powerups) {
+                        if (pup.active && player1.collidesWith(pup)) {
+                            pup.active = false;
+                            player1.powerupTimer = 360;
+                            sfx.playPowerup();
+                            showFeedback('💧 ¡Super Agua Limpia! Mayor salto y velocidad para limpiar el patio.', 'info');
+                            createFloatingParticles(pup.x + 13, pup.y + 13, '#38bdf8', 18);
+                        }
+                    }
+                }
+
+                if (player2 && player2.lives > 0) {
+                    player2.update(GRAVITY, platforms);
+
+                    for (let enemy of enemies) {
+                        if (player2.collidesWith(enemy)) {
+                            player2.hit();
+                            player2.vy = -6;
+                            player2.vx = (player2.x < enemy.x) ? -5 : 5;
+                        }
+                    }
+
+                    for (let pup of powerups) {
+                        if (pup.active && player2.collidesWith(pup)) {
+                            pup.active = false;
+                            player2.powerupTimer = 360;
+                            sfx.playPowerup();
+                            showFeedback('💧 ¡Super Agua Limpia para el Jugador 2!', 'info');
+                            createFloatingParticles(pup.x + 13, pup.y + 13, '#38bdf8', 18);
+                        }
+                    }
+                }
+
+                for (let enemy of enemies) enemy.update();
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawSchoolBackground(ctx);
+
+            for (let plat of platforms) plat.draw(ctx);
+            for (let bin of trashBins) bin.draw(ctx);
+            for (let item of wasteItems) item.draw(ctx);
+            for (let pup of powerups) pup.draw(ctx);
+            for (let enemy of enemies) enemy.draw(ctx);
+
+            if (player1 && player1.lives > 0) player1.draw(ctx);
+            if (player2 && player2.lives > 0) player2.draw(ctx);
+
+            updateAndDrawParticles(ctx);
+            requestAnimationFrame(gameLoop);
+        }
+
+        function updateHudLives() {
+            if (player1) {
+                const h1 = '❤️'.repeat(Math.max(0, player1.lives)) + '🖤'.repeat(Math.max(0, 3 - player1.lives));
+                document.getElementById('hud-p1-hearts').textContent = h1;
+            }
+            if (player2) {
+                const h2 = '❤️'.repeat(Math.max(0, player2.lives)) + '🖤'.repeat(Math.max(0, 3 - player2.lives));
+                document.getElementById('hud-p2-hearts').textContent = h2;
+            }
+        }
+
+        function updateHudScore() {
+            const scoreEl = document.getElementById('hud-score');
+            if (scoreEl) scoreEl.textContent = STATE.score.toString().padStart(4, '0');
+        }
+
+        function updateHudProgress() {
+            const progress = (STATE.depositedItems / STATE.requiredItems) * 100;
+            document.getElementById('hud-progress-bar').style.width = `${progress}%`;
+            document.getElementById('hud-progress-text').textContent = `${STATE.depositedItems}/${STATE.requiredItems}`;
+        }
+
+        function updateHudItem(player) {
+            const slotId = player.id === 1 ? 'hud-p1-item' : 'hud-p2-item';
+            const slot = document.getElementById(slotId);
+            if (!slot) return;
+            if (player.holdingItem) {
+                slot.textContent = player.holdingItem.emoji;
+                slot.classList.add('bg-emerald-600', 'border-emerald-300');
+            } else {
+                slot.textContent = '-';
+                slot.classList.remove('bg-emerald-600', 'border-emerald-300');
+            }
+        }
+
+        function checkVictory() {
+            if (STATE.depositedItems >= STATE.requiredItems) {
+                STATE.gameActive = false;
+                document.getElementById('victory-score').textContent = STATE.score;
+                const next = document.getElementById('btn-next-level');
+                next.style.display = CURRENT_LEVEL < 7 ? 'inline-block' : 'none';
+                document.getElementById('screen-victory').querySelector('h2').textContent = CURRENT_LEVEL < 7 ? '¡NIVEL SUPERADO!' : '¡COLEGIO TRANSFORMADO!';
+                document.getElementById('screen-victory').querySelector('p').textContent = CURRENT_LEVEL < 7 ? '¡Excelente! Tu equipo recuperó este espacio. Prepárate para una zona más desafiante.' : '¡Lo lograste! El colegio está más limpio porque cada persona hizo su parte. Lleva este aprendizaje a la vida real.';
+                sfx.playSuccess();
+                document.getElementById('screen-victory').classList.remove('hidden');
+            }
+        }
+
+        function checkGameOver() {
+            const p1Dead = !player1 || player1.lives <= 0;
+            const p2Dead = STATE.mode === 1 ? true : (!player2 || player2.lives <= 0);
+
+            if (p1Dead && p2Dead) {
+                STATE.gameActive = false;
+                document.getElementById('screen-gameover').classList.remove('hidden');
+            }
+        }
+
+        const screenTitle = document.getElementById('screen-title');
+        const screenCharSelect = document.getElementById('screen-char-select');
+        const screenVictory = document.getElementById('screen-victory');
+        const screenGameover = document.getElementById('screen-gameover');
+        const screenPause = document.getElementById('screen-pause');
+        const modalGuide = document.getElementById('modal-guide');
+        const hud = document.getElementById('hud');
+
+        document.getElementById('btn-mode-1p').addEventListener('click', () => {
+            sfx.init(); STATE.mode = 1; STATE.selectingPlayer = 1; STATE.p1Char = null; STATE.p2Char = null;
+            openCharacterSelect();
+        });
+
+        document.getElementById('btn-mode-2p').addEventListener('click', () => {
+            sfx.init(); STATE.mode = 2; STATE.selectingPlayer = 1; STATE.p1Char = null; STATE.p2Char = null;
+            openCharacterSelect();
+        });
+
+        document.getElementById('btn-open-guide').addEventListener('click', () => modalGuide.classList.remove('hidden'));
+        document.getElementById('btn-close-guide').addEventListener('click', () => modalGuide.classList.add('hidden'));
+        document.getElementById('btn-guide-ok').addEventListener('click', () => modalGuide.classList.add('hidden'));
+
+        function openCharacterSelect() {
+            screenTitle.classList.add('hidden');
+            screenCharSelect.classList.remove('hidden');
+            updateCharSelectUI();
+        }
+
+        function updateCharSelectUI() {
+            const sub = document.getElementById('char-select-subtitle');
+            const startBtn = document.getElementById('btn-start-game');
+
+            if (STATE.mode === 1) {
+                sub.textContent = 'Jugador 1: Selecciona tu personaje guardián';
+                if (STATE.p1Char) {
+                    startBtn.disabled = false;
+                    startBtn.classList.remove('bg-gray-600', 'text-gray-400', 'cursor-not-allowed');
+                    startBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-500', 'text-white', 'cursor-pointer');
+                } else {
+                    startBtn.disabled = true;
+                    startBtn.classList.add('bg-gray-600', 'text-gray-400', 'cursor-not-allowed');
+                }
+            } else {
+                if (STATE.selectingPlayer === 1) sub.textContent = 'Jugador 1: Elige a tu personaje';
+                else sub.textContent = 'Jugador 2: Elige a un compañero distinto';
+
+                if (STATE.p1Char && STATE.p2Char) {
+                    startBtn.disabled = false;
+                    startBtn.classList.remove('bg-gray-600', 'text-gray-400', 'cursor-not-allowed');
+                    startBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-500', 'text-white', 'cursor-pointer');
+                } else {
+                    startBtn.disabled = true;
+                    startBtn.classList.add('bg-gray-600', 'text-gray-400', 'cursor-not-allowed');
+                }
+            }
+
+            document.querySelectorAll('.char-card').forEach(card => {
+                const cKey = card.dataset.char;
+                card.classList.remove('border-blue-400', 'border-amber-400', 'ring-4', 'ring-blue-500', 'ring-amber-500', 'opacity-40');
+                if (STATE.p1Char === cKey) card.classList.add('border-blue-400', 'ring-4', 'ring-blue-500');
+                if (STATE.p2Char === cKey) card.classList.add('border-amber-400', 'ring-4', 'ring-amber-500');
+            });
+        }
+
+        document.querySelectorAll('.char-card').forEach(card => {
+            card.addEventListener('click', () => {
+                sfx.playPickup();
+                const chosen = card.dataset.char;
+                if (STATE.mode === 1) {
+                    STATE.p1Char = chosen;
+                } else {
+                    if (STATE.selectingPlayer === 1) {
+                        STATE.p1Char = chosen;
+                        STATE.selectingPlayer = 2;
+                    } else {
+                        if (chosen === STATE.p1Char) {
+                            showFeedback('⚠️ ¡Ese personaje ya fue elegido por el Jugador 1!', 'warning');
+                            return;
+                        }
+                        STATE.p2Char = chosen;
+                    }
+                }
+                updateCharSelectUI();
+            });
+        });
+
+        document.getElementById('btn-back-title').addEventListener('click', () => {
+            screenCharSelect.classList.add('hidden');
+            screenTitle.classList.remove('hidden');
+        });
+
+        document.getElementById('btn-start-game').addEventListener('click', () => {
+            screenCharSelect.classList.add('hidden');
+            hud.classList.remove('hidden');
+
+            const p1Data = CHARACTERS[STATE.p1Char];
+            document.getElementById('hud-p1-avatar').textContent = p1Data.emoji;
+            document.getElementById('hud-p1-name').textContent = p1Data.name.split(',')[0];
+
+            if (STATE.mode === 2) {
+                const p2Data = CHARACTERS[STATE.p2Char];
+                document.getElementById('hud-p2-avatar').textContent = p2Data.emoji;
+                document.getElementById('hud-p2-name').textContent = p2Data.name.split(',')[0];
+            }
+
+            document.getElementById('story-screen').classList.add('show');
+            STATE.gameActive = false;
+            STATE.paused = true;
+        });
+
+        document.getElementById('btn-pause').addEventListener('click', () => {
+            if (!STATE.gameActive) return;
+            STATE.paused = true;
+            screenPause.classList.remove('hidden');
+        });
+
+        document.getElementById('btn-resume').addEventListener('click', () => {
+            STATE.paused = false;
+            screenPause.classList.add('hidden');
+        });
+
+        document.getElementById('btn-restart').addEventListener('click', () => {
+            screenPause.classList.add('hidden');
+            buildSchoolLevel();
+            STATE.gameActive = true;
+            STATE.paused = false;
+        });
+
+        document.getElementById('btn-exit-menu').addEventListener('click', () => {
+            screenPause.classList.add('hidden');
+            hud.classList.add('hidden');
+            screenTitle.classList.remove('hidden');
+            STATE.gameActive = false;
+        });
+
+        document.getElementById('btn-retry').addEventListener('click', () => {
+            screenGameover.classList.add('hidden');
+            buildSchoolLevel();
+            STATE.gameActive = true;
+            STATE.paused = false;
+        });
+
+        document.getElementById('btn-menu-over').addEventListener('click', () => {
+            screenGameover.classList.add('hidden');
+            hud.classList.add('hidden');
+            screenTitle.classList.remove('hidden');
+            STATE.gameActive = false;
+        });
+
+        document.getElementById('btn-replay-vic').addEventListener('click', () => {
+            screenVictory.classList.add('hidden');
+            buildSchoolLevel();
+            STATE.gameActive = true;
+            STATE.paused = false;
+        });
+
+        document.getElementById('btn-menu-vic').addEventListener('click', () => {
+            screenVictory.classList.add('hidden');
+            hud.classList.add('hidden');
+            screenTitle.classList.remove('hidden');
+            STATE.gameActive = false;
+        });
+
+        document.getElementById('story-start').addEventListener('click', () => {
+            document.getElementById('story-screen').classList.remove('show');
+            CURRENT_LEVEL = 1; buildSchoolLevel(); STATE.gameActive = true; STATE.paused = false;
+            showFeedback('🌱 ¡La aventura comienza! Cada residuo tiene un lugar correcto.', 'info');
+        });
+        document.getElementById('story-back').addEventListener('click', () => {
+            document.getElementById('story-screen').classList.remove('show');
+            hud.classList.add('hidden'); screenCharSelect.classList.remove('hidden');
+        });
+
+        document.getElementById('btn-shop-menu').addEventListener('click', openShop);
+        document.getElementById('shop-close').addEventListener('click', closeShop);
+        
+        document.getElementById('btn-next-level').addEventListener('click', () => {
+            document.getElementById('screen-victory').classList.add('hidden');
+            CURRENT_LEVEL = Math.min(7, CURRENT_LEVEL + 1);
+            buildSchoolLevel(); STATE.gameActive = true; STATE.paused = false;
+            showFeedback(`🚀 Nivel ${CURRENT_LEVEL}: ${LEVEL_NAMES[CURRENT_LEVEL-1]}. ¡Ahora hay más retos!`, 'info');
+        });
+
+        if (!document.getElementById('btn-shop-hud')) {
+            document.getElementById('btn-pause').insertAdjacentHTML('beforebegin', '<button id="btn-shop-hud" title="Tienda" class="bg-amber-500 text-slate-900 px-2 py-1 rounded font-bold">🛍️</button>');
+            document.getElementById('btn-shop-hud').addEventListener('click', openShop);
+        }
+
+        window.addEventListener('keydown', e => {
+            if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+                if (STATE.gameActive && !STATE.paused) {
+                    useCharacterPower(player1);
+                    if (player2) useCharacterPower(player2);
+                }
+            }
+            if (e.code === 'Escape' && document.getElementById('shop-screen').classList.contains('show')) closeShop();
+        });
+
+        const touchJump = document.getElementById('touch-jump');
+        if (touchJump && !document.getElementById('touch-power')) {
+            touchJump.insertAdjacentHTML('afterend', '<button id="touch-power" class="touch-btn w-12 h-11 bg-amber-500/80 border-amber-300 text-lg">⚡</button>');
+            document.getElementById('touch-power').addEventListener('click', () => useCharacterPower(player1));
+        }
+
+        renderShop();
+
+        window.onload = function () {
+            canvas.width = 960;
+            canvas.height = 540;
+            requestAnimationFrame(gameLoop);
+        };
+    </script>
+</body>
+</html>
